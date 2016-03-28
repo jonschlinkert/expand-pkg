@@ -341,7 +341,7 @@ describe('expand-pkg (no git repository)', function() {
         assert(!res.hasOwnProperty('contributors'));
       });
 
-      it('should return an author array as-is', function () {
+      it('should not modify a contributors array with one object', function () {
         var pkg = {
           contributors: [{
             name: 'Jon Schlinkert',
@@ -352,6 +352,36 @@ describe('expand-pkg (no git repository)', function() {
         var res = config.expand(pkg);
         assert.equal(res.contributors[0].name, 'Jon Schlinkert');
         assert.equal(res.contributors[0].url, 'https://github.com/jonschlinkert');
+      });
+
+      it('should not modify array of contributor objects', function () {
+        var pkg = {
+          contributors: [
+            {name: 'Jon Schlinkert', url: 'https://github.com/jonschlinkert'},
+            {name: 'Brian Woodward', url: 'https://github.com/doowb'}
+          ]
+        };
+
+        var res = config.expand(pkg);
+        assert.equal(res.contributors[0].name, 'Jon Schlinkert');
+        assert.equal(res.contributors[0].url, 'https://github.com/jonschlinkert');
+        assert.equal(res.contributors[1].name, 'Brian Woodward');
+        assert.equal(res.contributors[1].url, 'https://github.com/doowb');
+      });
+
+      it('should parse an array of contributor strings', function () {
+        var pkg = {
+          contributors: [
+            'Jon Schlinkert (https://github.com/jonschlinkert)',
+            'Brian Woodward (https://github.com/doowb)'
+          ]
+        };
+
+        var res = config.expand(pkg);
+        assert.equal(res.contributors[0].name, 'Jon Schlinkert');
+        assert.equal(res.contributors[0].url, 'https://github.com/jonschlinkert');
+        assert.equal(res.contributors[1].name, 'Brian Woodward');
+        assert.equal(res.contributors[1].url, 'https://github.com/doowb');
       });
     });
   });
@@ -409,6 +439,7 @@ describe('expand-pkg (no git repository)', function() {
           bugs: {
             type: ['object', 'string'],
             normalize: function custom(key, val, config) {
+              this.update('repository', config);
               var bugs = {};
               bugs.url = config.repository + '/bugs'
               return bugs;
@@ -700,36 +731,6 @@ describe('expand-pkg (no git repository)', function() {
 
       config.expand(pkg); 
       assert.equal(count, 0);
-      cb();
-    });
-
-    it('should emit a warning when bin string points to an invalid filepath', function(cb) {
-      var pkg = {bin: 'bin/foo.js'};
-      var count = 0;
-
-      config.on('warning', function(method, key, err) {
-        if (key === 'bin') {
-          count++;
-        }
-      });
-
-      config.expand(pkg); 
-      assert.equal(count, 1);
-      cb();
-    });
-
-    it('should emit a warning when bin points to an invalid filepath', function(cb) {
-      var pkg = {bin: {foo: 'bin/foo.js'}};
-      var count = 0;
-
-      config.on('warning', function(method, key, err) {
-        if (key === 'bin') {
-          count++;
-        }
-      });
-
-      config.expand(pkg); 
-      assert.equal(count, 1);
       cb();
     });
   });

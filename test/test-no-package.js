@@ -249,11 +249,6 @@ describe('expand (no package.json)', function() {
       assert.equal(res.repository, 'jonschlinkert/project-no-package');
     });
 
-    it('should set `remote`', function() {
-      var res = config.expand({});
-      assert.equal(res.git.remote.url, 'https://github.com/jonschlinkert/project-no-package.git');
-    });
-
     it('should use the given homepage', function() {
       var pkg = {homepage: 'https://github.com/assemble/assemble'};
       var res = config.expand(pkg);
@@ -438,6 +433,7 @@ describe('expand (no package.json)', function() {
           bugs: {
             type: ['object', 'string'],
             normalize: function custom(key, val, config) {
+              this.update('repository', config);
               var bugs = {};
               bugs.url = config.repository + '/bugs'
               return bugs;
@@ -729,36 +725,6 @@ describe('expand (no package.json)', function() {
 
       config.expand(pkg); 
       assert.equal(count, 0);
-      cb();
-    });
-
-    it('should emit a warning when bin string points to an invalid filepath', function(cb) {
-      var pkg = {bin: 'bin/foo.js'};
-      var count = 0;
-
-      config.on('warning', function(method, key, err) {
-        if (key === 'bin') {
-          count++;
-        }
-      });
-
-      config.expand(pkg); 
-      assert.equal(count, 1);
-      cb();
-    });
-
-    it('should emit a warning when bin points to an invalid filepath', function(cb) {
-      var pkg = {bin: {foo: 'bin/foo.js'}};
-      var count = 0;
-
-      config.on('warning', function(method, key, err) {
-        if (key === 'bin') {
-          count++;
-        }
-      });
-
-      config.expand(pkg); 
-      assert.equal(count, 1);
       cb();
     });
   });

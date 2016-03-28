@@ -2,7 +2,6 @@
 
 var path = require('path');
 var Emitter = require('component-emitter');
-var Pkg = require('normalize-pkg');
 var schema = require('./lib/schema');
 var utils = require('./lib/utils');
 
@@ -98,7 +97,6 @@ ExpandPkg.prototype.expand = function(pkg, options) {
   if (typeof pkg === 'string') {
     pkg = utils.requirePackage(pkg);
   }
-  this.schema.options = utils.merge({}, this.schema.options, options);
   return this.schema.normalize(pkg, options);
 };
 

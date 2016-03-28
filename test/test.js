@@ -37,6 +37,98 @@ describe('normalize', function() {
     del(git, cb);
   });
 
+
+  describe('Expander', function() {
+    it('should instantiate without new', function() {
+      config = Expander({foo: 'bar'});
+      assert.equal(config.options.foo, 'bar');
+    });
+
+    it('should instantiate with an options object', function() {
+      config = new Expander({foo: 'bar'});
+      assert.equal(config.options.foo, 'bar');
+    });
+
+    it('should instantiate without an options object', function() {
+      config = new Expander();
+      assert.deepEqual(config.options, {});
+    });
+  });
+
+  describe('.field', function() {
+    it('should add a custom field', function() {
+      config = new Expander({omit: 'version'})
+      config.field('foo', 'string', {
+        normalize: function(val, key, config, schema) {
+          config[key] = {a: 'b'};
+          return config[key];
+        }
+      });
+
+      var res = config.expand({});
+      assert.equal(res.foo.a, 'b');
+    });
+
+    it('should convert a function to a `normalize` function', function() {
+      config = new Expander({omit: 'version'})
+      config.field('foo', 'string', function(val, key, config, schema) {
+        config[key] = {a: 'b'};
+        return config[key];
+      });
+
+      var res = config.expand({});
+      assert.equal(res.foo.a, 'b');
+    });
+
+    it('should remove an array of fields on options.omit', function() {
+      config = new Expander({omit: ['version', 'main']});
+      var res = config.expand({});
+      assert.equal(typeof res.version, 'undefined');
+      assert.equal(typeof res.main, 'undefined');
+    });
+
+    it('should extend an existing field', function() {
+      config = new Expander({knownOnly: true});
+      config.schema.fields = {};
+
+      config.field('foo', 'string', {
+        normalize: function(val) {
+          return val + ':bar';
+        }
+      });
+
+      config.field('foo', 'string', {
+        extend: true,
+        default: 'foo',
+      });
+
+      var res = config.expand({});
+      assert.equal(res.foo, 'foo:bar');
+    });
+  });
+
+  describe('package.json', function() {
+    it('should get package.json when no args are passed', function() {
+      var res = config.expand();
+      assert.equal(res.name, 'test-project');
+    });
+
+    it('should get package.json from a cwd', function() {
+      var res = config.expand(process.cwd());
+      assert.equal(res.name, 'test-project');
+    });
+
+    it('should get the cwd when dir exists but path does not exist', function() {
+      var res = config.expand(path.resolve(process.cwd(), 'index.js'));
+      assert.equal(res.name, 'test-project');
+    });
+
+    it('should get the cwd from a file path', function() {
+      var res = config.expand(path.resolve(process.cwd(), 'main.js'));
+      assert.equal(res.name, 'test-project');
+    });
+  });
+
   describe('omit', function() {
     it('should remove a field on options.omit', function() {
       config = new Expander({omit: 'version'});
@@ -302,6 +394,12 @@ describe('normalize', function() {
       var res = config.expand({repository: 'doowb/foo'});
       assert.equal(res.owner, 'doowb');
     });
+
+    it('should not override username', function() {
+      var res = config.expand({repository: 'doowb/foo', username: 'jonschlinkert'});
+      assert.equal(res.owner, 'doowb');
+      assert.equal(res.username, 'jonschlinkert');
+    });
   });
 
   describe('author', function() {
@@ -340,6 +438,15 @@ describe('normalize', function() {
     it('should parse an author string', function () {
       var pkg = {
         author: 'Jon Schlinkert (https://github.com/jonschlinkert)'
+      };
+
+      var res = config.expand(pkg);
+      assert.equal(res.author.name, 'Jon Schlinkert');
+    });
+
+    it('should parse an array of author strings', function () {
+      var pkg = {
+        author: ['Jon Schlinkert (https://github.com/jonschlinkert)']
       };
 
       var res = config.expand(pkg);
@@ -474,6 +581,7 @@ describe('normalize', function() {
           bugs: {
             type: ['object', 'string'],
             normalize: function custom(key, val, config) {
+              this.update('repository', config);
               var bugs = {};
               bugs.url = config.repository + '/bugs'
               return bugs;
@@ -765,36 +873,6 @@ describe('normalize', function() {
 
       config.expand(pkg); 
       assert.equal(count, 0);
-      cb();
-    });
-
-    it('should emit a warning when bin string points to an invalid filepath', function(cb) {
-      var pkg = {bin: 'bin/foo.js'};
-      var count = 0;
-
-      config.on('warning', function(method, key, err) {
-        if (key === 'bin') {
-          count++;
-        }
-      });
-
-      config.expand(pkg); 
-      assert.equal(count, 1);
-      cb();
-    });
-
-    it('should emit a warning when bin points to an invalid filepath', function(cb) {
-      var pkg = {bin: {foo: 'bin/foo.js'}};
-      var count = 0;
-
-      config.on('warning', function(method, key, err) {
-        if (key === 'bin') {
-          count++;
-        }
-      });
-
-      config.expand(pkg); 
-      assert.equal(count, 1);
       cb();
     });
   });
