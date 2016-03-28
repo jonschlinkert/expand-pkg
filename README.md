@@ -1,6 +1,6 @@
 # expand-pkg [![NPM version](https://img.shields.io/npm/v/expand-pkg.svg?style=flat)](https://www.npmjs.com/package/expand-pkg) [![NPM downloads](https://img.shields.io/npm/dm/expand-pkg.svg?style=flat)](https://npmjs.org/package/expand-pkg) [![Build Status](https://img.shields.io/travis/jonschlinkert/expand-pkg.svg?style=flat)](https://travis-ci.org/jonschlinkert/expand-pkg)
 
-> Expand values in package.json into objects that can be used as context in templates.
+> Parse values in package.json into objects that can be used as context in templates.
 
 ## Install
 
@@ -10,65 +10,177 @@ Install with [npm](https://www.npmjs.com/):
 $ npm install expand-pkg --save
 ```
 
-Install with [bower](http://bower.io/)
-
-```sh
-$ bower install expand-pkg --save
-```
-
 ## Usage
 
 ```js
-var schema = require('./')();
-var pkg = schema.expand(require('./package'));
+var Pkg = require('./');
+var pkg = new Pkg();
+console.log(pkg.expand(require('./package')));
 ```
 
-## Expanding fields
+## Schema
 
-Fields are expanded using a schema (powered by [map-schema](https://github.com/jonschlinkert/map-schema)).
+Values are expanded using a [schema](lib/schema.js) that is passed to [map-schema](https://github.com/jonschlinkert/map-schema) (builds on the schema from [normalize-pkg](https://github.com/jonschlinkert/normalize-pkg) as a starting point):
 
-**Defaults**
+* only properties that have a corresponding field on the schema will be expanded.
+* any properties that do not have a corresponding field are returned unmodified.
 
-Defaults are based on npm recommendations. When a required or recommended field is missing, `expand-pkg` attempts to create the field if valid data can be found in the repository.
+See the [.field docs](#field) to learn how to add or overwrite a field on the schema.
+
+## Defaults
+
+A `default` value may optionally be defined when a `.field` is registered. When `.expand` is run and a property that is required or recommended by npm is missing, `expand-pkg` attempts to create the field if valid data can be found in the repository.
+
+The following fields are the only built-in fields with default values:
+
+* `version`: `'0.1.0'`
+* `license`: `'MIT'`
+* `engines`: `{node: '>= 0.10.0'}`
+
+## API
+
+### [ExpandPkg](index.js#L23)
+
+Create an instance of `ExpandPkg` with the given `options`.
+
+**Params**
+
+* `options` **{Object}**
 
 **Example**
 
-The following:
-
 ```js
-var schema = require('./')();
-
-// no package.json is passed, just an empty object
-var pkg = schema.expand({});
+var config = new ExpandPkg();
+var pkg = config.expand({
+  author: 'Jon Schlinkert (https://github.com/jonschlinkert)'
+});
 console.log(pkg);
+//=> {name: 'Jon Schlinkert', url: 'https://github.com/jonschlinkert'}
 ```
 
-Results in:
+### [.field](index.js#L68)
+
+Add a field to the schema, or overwrite or extend an existing field. The last argument is an `options` object that supports the following properties:
+
+* `normalize` **{Function}**: function to be called on the given package.json value when the `.expand` method is called
+* `default` **{any}**: default value to be used when the package.json property is undefined.
+* `required` **{Boolean}**: define `true` if the property is required
+
+**Params**
+
+* `name` **{String}**: Field name (required)
+* `type` **{String|Array}**: One or more native javascript types allowed for the property value (required)
+* `options` **{Object}**
+* `returns` **{Object}**: Returns the instance
+
+**Example**
 
 ```js
-{ name: 'expand-pkg',
-  version: '0.1.0',
-  homepage: 'https://github.com/jonschlinkert/expand-pkg',
-  repository: 'jonschlinkert/expand-pkg',
-  license: 'MIT',
-  files: [ 'index.js' ],
-  main: 'index.js',
-  engines: { node: '>= 0.10.0' },
-  keywords: [ 'expand', 'pkg' ] }
+var config = new ExpandPkg();
+
+config.field('foo', 'string', {
+  default: 'bar'
+});
+
+var pkg = config.expand({});
+console.log(pkg);
+//=> {foo:  'bar'}
 ```
 
-The fields were created by parsing `.git` config or using defaults defined on the schema.
+### [.expand](index.js#L93)
 
-## Customize
+Iterate over `pkg` properties and expand values that have corresponding [fields](#field) registered on the schema.
 
-Pass a `fields` object on the options to customize any fields on the schema (also define `extend: true` if you want the field to extend a field that is already defined):
+**Params**
+
+* `pkg` **{Object}**: The `package.json` object to expand
+* `options` **{Object}**
+* `returns` **{Object}**: Returns an expanded package.json object.
+
+**Example**
 
 ```js
-var pkg = schema.expand(require('./package'), {
+var config = new ExpandPkg();
+var pkg = config.expand(require('./package.json'));
+```
+
+## Options
+
+### options.knownOnly
+
+**Type**
+
+: `boolean`
+
+**Default**: `undefined`
+
+Omit properties from package.json that do not have a field registered on the schema.
+
+```js
+var Config = require('expand-pkg');
+var config = new Config({knownOnly: true});
+
+var pkg = config.normalize({name: 'my-project', foo: 'bar'});
+console.log(pkg);
+//=> {name: 'my-project'}
+```
+
+### options.pick
+
+**Type**
+
+: `array`
+
+**Default**: `undefined`
+
+Filter the resulting object to contain only the specified keys.
+
+### options.omit
+
+**Type**
+
+: `array`
+
+**Default**: `undefined`
+
+Remove the specified keys from the resulting object.
+
+### options.fields
+
+Pass a `fields` object on the options to customize any fields on the schema (also see [options.extend](#options-extend)):
+
+```js
+var pkg = config.normalize(require('./package'), {
   extend: true,
   fields: {
     name: {
-      expand: function() {
+      normalize: function() {
+        return 'bar'
+      }
+    }
+  }
+});
+
+console.log(pkg.name);
+//=> 'bar'
+```
+
+### options.extend
+
+**Type**
+
+: `boolean`
+
+**Default**: `undefined`
+
+Used with [options.field](#options-field), pass `true` if you want to extend a field that is already defined on the schema.
+
+```js
+var pkg = config.normalize(require('./package'), {
+  extend: true,
+  fields: {
+    name: {
+      normalize: function() {
         return 'bar'
       }
     }

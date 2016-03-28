@@ -1,7 +1,7 @@
 {
   "name": "expand-pkg",
-  "description": "Expand values in package.json into objects that can be used as context in templates.",
-  "version": "0.3.1",
+  "description": "Parse values in package.json into objects that can be used as context in templates.",
+  "version": "0.1.0",
   "homepage": "https://github.com/jonschlinkert/expand-pkg",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "jonschlinkert/expand-pkg",
@@ -46,14 +46,19 @@
     "mocha": "^2.4.5"
   },
   "keywords": [
+    "author",
     "config",
-    "fix",
     "json",
     "normalize",
     "package",
     "package-json",
+    "parse",
+    "person",
     "pkg",
     "properties",
+    "repo",
+    "repository",
+    "url",
     "values"
   ],
   "verb": {
@@ -73,7 +78,8 @@
     },
     "reflinks": [
       "map-schema",
-      "verb"
+      "verb",
+      "normalize-pkg"
     ],
     "lint": {
       "reflinks": true
