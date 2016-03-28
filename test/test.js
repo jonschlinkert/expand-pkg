@@ -5,11 +5,13 @@ var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
 var gitty = require('gitty');
+var del = require('delete');
 var Expander = require('..');
 var config;
 var repo;
 
 var project = path.resolve(__dirname, 'fixtures/project');
+var git = path.resolve(project, '.git');
 var cwd = process.cwd();
 
 describe('normalize', function() {
@@ -17,13 +19,22 @@ describe('normalize', function() {
     config = new Expander({verbose: false});
   });
 
-  before(function() {
+  before(function(cb) {
     process.chdir(project);
-    repo = gitty(project);
+    del(git, function(err) {
+      if (err) return cb(err);
+
+      repo = gitty(project);
+      repo.initSync();
+      repo.addSync(['.']);
+      repo.commitSync('first commit');
+      cb();
+    });
   });
 
-  after(function() {
+  after(function(cb) {
     process.chdir(cwd);
+    del(git, cb);
   });
 
   describe('omit', function() {
@@ -273,6 +284,26 @@ describe('normalize', function() {
     });
   });
 
+  describe('owner', function() {
+    before(function(cb) {
+      repo.addRemote('origin', 'https://github.com/jonschlinkert/test-project.git', cb);
+    });
+
+    after(function(cb) {
+      repo.removeRemote('origin', cb);
+    });
+
+    it('should get owner from the git url', function() {
+      var res = config.expand({});
+      assert.equal(res.owner, 'jonschlinkert');
+    });
+
+    it('should get owner from the repository', function() {
+      var res = config.expand({repository: 'doowb/foo'});
+      assert.equal(res.owner, 'doowb');
+    });
+  });
+
   describe('author', function() {
     before(function(cb) {
       repo.addRemote('origin', 'https://github.com/jonschlinkert/test-project.git', cb);
@@ -306,25 +337,13 @@ describe('normalize', function() {
       assert.equal(res.author.url, 'https://github.com/jonschlinkert');
     });
 
-    it('should get username', function () {
-      var pkg = {
-        author: {
-          name: 'Jon Schlinkert',
-          url: 'https://github.com/jonschlinkert'
-        }
-      };
-
-      var res = config.expand(pkg);
-      assert.equal(res.username, 'jonschlinkert');
-    });
-
     it('should parse an author string', function () {
       var pkg = {
         author: 'Jon Schlinkert (https://github.com/jonschlinkert)'
       };
 
       var res = config.expand(pkg);
-      assert.equal(res.username, 'jonschlinkert');
+      assert.equal(res.author.name, 'Jon Schlinkert');
     });
   });
 

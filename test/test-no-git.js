@@ -6,7 +6,7 @@ var path = require('path');
 var assert = require('assert');
 var gitty = require('gitty');
 var Expander = require('..');
-var schema;
+var config;
 var repo;
 
 var project = path.resolve(__dirname, 'fixtures/project-no-git');
@@ -14,7 +14,7 @@ var cwd = process.cwd();
 
 describe('expand-pkg (no git repository)', function() {
   beforeEach(function() {
-    schema = new Expander({verbose: false});
+    config = new Expander({verbose: false});
   });
 
   before(function() {
@@ -27,14 +27,14 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('omit', function() {
     it('should remove a field on options.omit', function() {
-      schema = new Expander({omit: 'version'});
-      var res = schema.expand({});
+      config = new Expander({omit: 'version'});
+      var res = config.expand({});
       assert.equal(typeof res.version, 'undefined');
     });
 
     it('should remove an array of fields on options.omit', function() {
-      schema = new Expander({omit: ['version', 'main']});
-      var res = schema.expand({});
+      config = new Expander({omit: ['version', 'main']});
+      var res = config.expand({});
       assert.equal(typeof res.version, 'undefined');
       assert.equal(typeof res.main, 'undefined');
     });
@@ -42,7 +42,7 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('defaults', function() {
     it('should add default properties to config', function() {
-      var res = schema.expand({});
+      var res = config.expand({});
       assert.equal(res.name, 'test-project');
       assert.equal(res.version, '0.1.0');
     });
@@ -51,21 +51,21 @@ describe('expand-pkg (no git repository)', function() {
   describe('name', function() {
     it('should use the defined project name', function() {
       var pkg = { name: 'foo' };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.name);
       assert.equal(res.name, 'foo');
     });
 
     it('should get the project name when string is empty', function() {
       var pkg = { name: '' };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.name);
       assert.equal(res.name, 'test-project');
     });
 
     it('should get the project name when missing', function() {
       var pkg = {};
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.name);
       assert.equal(res.name, 'test-project');
     });
@@ -83,7 +83,7 @@ describe('expand-pkg (no git repository)', function() {
         }
       };
 
-      var res = schema.expand(pkg, opts);
+      var res = config.expand(pkg, opts);
       assert(res.name);
       assert.equal(res.name, 'bar');
     });
@@ -92,14 +92,14 @@ describe('expand-pkg (no git repository)', function() {
   describe('version', function() {
     it('should use the given version', function() {
       var pkg = {version: '1.0.0'};
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.version);
       assert.equal(res.version, '1.0.0');
     });
 
     it('should use the default version', function() {
       var pkg = {version: ''};
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.version);
       assert.equal(res.version, '0.1.0');
     });
@@ -108,13 +108,13 @@ describe('expand-pkg (no git repository)', function() {
       var pkg = {version: 5};
       var count = 0;
 
-      schema.on('warning', function(method, key, err) {
+      config.on('warning', function(method, key, err) {
         if (key === 'version') {
           count++;
         }
       });
 
-      schema.expand(pkg); 
+      config.expand(pkg); 
       assert.equal(count, 1);
       cb();
     });
@@ -122,7 +122,7 @@ describe('expand-pkg (no git repository)', function() {
     it('should throw an error when version is invalid', function(cb) {
       var pkg = {version: 'foo'};
       try {
-        schema.expand(pkg);
+        config.expand(pkg);
         cb(new Error('expected an error'));
       } catch (err) {
         assert(/invalid semver/.test(err.message));
@@ -134,19 +134,19 @@ describe('expand-pkg (no git repository)', function() {
   describe('main', function() {
     it('should remove the property if the file does not exist', function() {
       var pkg = { main: 'foo.js' };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(!res.hasOwnProperty('main'));
     });
 
     it('should not remove the property if the file exists', function() {
       var pkg = { main: 'main.js' };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.hasOwnProperty('main'));
     });
 
     it('should add the main file to the `files` array', function() {
       var pkg = { main: 'main.js' };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(res.files.indexOf('main.js'), 0);
     });
 
@@ -156,7 +156,7 @@ describe('expand-pkg (no git repository)', function() {
         main: 'index.js'
       };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(!res.hasOwnProperty('files'));
     });
 
@@ -166,7 +166,7 @@ describe('expand-pkg (no git repository)', function() {
         main: 'main.js'
       };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(res.files.length, 1);
       assert.equal(res.files[0], 'main.js');
     });
@@ -176,7 +176,7 @@ describe('expand-pkg (no git repository)', function() {
         main: 'main.js'
       };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.files.length);
       assert(res.files.indexOf('main.js') !== -1);
     });
@@ -187,7 +187,7 @@ describe('expand-pkg (no git repository)', function() {
         main: 'main.js'
       };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(res.files.length, 1);
       assert(res.files.indexOf('main.js') !== -1);
     });
@@ -195,14 +195,14 @@ describe('expand-pkg (no git repository)', function() {
     it('should remove main if the file does not exist', function() {
       var pkg = { main: 'foo.js' };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(!res.main);
     });
 
     it('should do nothing if not defined', function() {
       var pkg = {};
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(typeof res.main, 'undefined');
     });
   });
@@ -210,39 +210,39 @@ describe('expand-pkg (no git repository)', function() {
   describe('files', function() {
     it('should remove a file if it does not exist', function() {
       var pkg = { files: ['foo.js', 'main.js'] };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(res.files.length, 1);
     });
 
     it('should remove the files array if it\'s empty', function() {
       var pkg = { files: [] };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(!res.files);
     });
 
     it('should remove the files array if a file that does not exist is removed', function() {
       var pkg = { files: ['foo.js'] };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(!res.files);
     });
   });
 
   describe('homepage', function() {
     it('should add a homepage from git repository', function() {
-      var res = schema.expand(process.cwd());
+      var res = config.expand(process.cwd());
       assert(res.homepage);
       assert.equal(res.homepage, 'https://github.com/jonschlinkert/test-project');
     });
 
     it('should add repository when setting hompage', function() {
-      var res = schema.expand(process.cwd());
+      var res = config.expand(process.cwd());
       assert(res.homepage);
       assert.equal(res.repository, 'jonschlinkert/test-project');
     });
     
     it('should use the given homepage', function() {
       var pkg = {homepage: 'https://github.com/assemble/assemble'};
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.homepage);
       assert.equal(res.homepage, 'https://github.com/assemble/assemble');
     });
@@ -253,21 +253,33 @@ describe('expand-pkg (no git repository)', function() {
         repository: 'git://github.com/jonschlinkert/test-project.git'
       };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.homepage);
       assert.equal(res.homepage, 'https://github.com/jonschlinkert/test-project');
     });
   });
 
+  describe('owner', function() {
+    it('should get owner from the git url', function() {
+      var res = config.expand({});
+      assert.equal(res.owner, 'jonschlinkert');
+    });
+
+    it('should get owner from the repository', function() {
+      var res = config.expand({repository: 'doowb/foo'});
+      assert.equal(res.owner, 'doowb');
+    });
+  });
+
   describe('author', function() {
     it('should not add an empty author field', function() {
-      var res = schema.expand({});
+      var res = config.expand({});
       assert(!res.hasOwnProperty('author'));
     });
 
     it('should convert an author string to an object', function() {
       var pkg = { author: 'Jon Schlinkert' };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(res.author.name, 'Jon Schlinkert');
     });
 
@@ -279,7 +291,7 @@ describe('expand-pkg (no git repository)', function() {
         }
       };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(res.author.name, 'Jon Schlinkert');
       assert.equal(res.author.url, 'https://github.com/jonschlinkert');
     });
@@ -287,32 +299,32 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('maintainers', function() {
     it('should not add an empty maintainers field', function() {
-      var res = schema.expand({});
+      var res = config.expand({});
       assert(!res.hasOwnProperty('maintainers'));
     });
   });
 
   describe('license', function() {
     it('should add MIT as the default license', function() {
-      var res = schema.expand({});
+      var res = config.expand({});
       assert(res.hasOwnProperty('license'));
       assert.equal(res.license, 'MIT');
     });
 
     it('should return license as is if it is a string', function() {
-      var res = schema.expand({license: 'MIT'});
+      var res = config.expand({license: 'MIT'});
       assert(res.hasOwnProperty('license'));
       assert.equal(res.license, 'MIT');
     });
 
     it('should convert from an object to a string', function() {
-      var res = schema.expand({license: {type: 'MIT'}});
+      var res = config.expand({license: {type: 'MIT'}});
       assert(res.hasOwnProperty('license'));
       assert.equal(res.license, 'MIT');
     });
 
     it('should convert from an array to a string', function() {
-      var res = schema.expand({license: [{type: 'MIT'}]});
+      var res = config.expand({license: [{type: 'MIT'}]});
       assert(res.hasOwnProperty('license'));
       assert.equal(res.license, 'MIT');
     });
@@ -320,12 +332,12 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('people', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     describe('contributors', function() {
       it('should not add an empty contributors field', function() {
-        var res = schema.expand({});
+        var res = config.expand({});
         assert(!res.hasOwnProperty('contributors'));
       });
 
@@ -337,7 +349,7 @@ describe('expand-pkg (no git repository)', function() {
           }]
         };
 
-        var res = schema.expand(pkg);
+        var res = config.expand(pkg);
         assert.equal(res.contributors[0].name, 'Jon Schlinkert');
         assert.equal(res.contributors[0].url, 'https://github.com/jonschlinkert');
       });
@@ -347,14 +359,14 @@ describe('expand-pkg (no git repository)', function() {
   describe('repository', function() {
     it('should use the given repository', function() {
       var pkg = {repository: 'jonschlinkert/foo'};
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.repository);
       assert.equal(res.repository, 'jonschlinkert/foo');
     });
 
     it('should convert repository.url to a string', function() {
       var pkg = {repository: {url: 'https://github.com/jonschlinkert/foo.git'}};
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.repository);
       assert.equal(res.repository, 'jonschlinkert/foo');
     });
@@ -362,20 +374,20 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('bugs', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should use the given bugs value', function() {
       var pkg = {bugs: {url: 'jonschlinkert/foo'}};
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.bugs);
       assert.equal(res.bugs.url, 'jonschlinkert/foo');
     });
 
     it('should use the value function passed on options', function() {
       var pkg = { bugs: '' };
-      var res = schema.expand(pkg, {
+      var res = config.expand(pkg, {
         fields: {
           bugs: {
             type: ['string', 'object'],
@@ -391,7 +403,7 @@ describe('expand-pkg (no git repository)', function() {
 
     it('should use a custom type passed on options', function() {
       var pkg = {bugs: '', repository: 'https://github.com/foo'};
-      var res = schema.expand(pkg, {
+      var res = config.expand(pkg, {
         extend: false,
         fields: {
           bugs: {
@@ -412,7 +424,7 @@ describe('expand-pkg (no git repository)', function() {
 
     it('should convert bugs.url to a string when specified', function() {
       var pkg = {bugs: {url: 'https://github.com/jonschlinkert/foo.git'}};
-      var res = schema.expand(pkg, {
+      var res = config.expand(pkg, {
         extend: false,
         fields: {
           bugs: {
@@ -430,7 +442,7 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('license', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should convert a license object to a string', function() {
@@ -441,7 +453,7 @@ describe('expand-pkg (no git repository)', function() {
         }
       };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(typeof res.license, 'string');
       assert.equal(res.license, 'MIT');
     });
@@ -449,20 +461,20 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('licenses', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should emit a deprecation warning when licenses is defined', function(cb) {
       var pkg = {licenses: {type: 'MIT'}};
       var count = 0;
 
-      schema.on('warning', function(method, key, err) {
+      config.on('warning', function(method, key, err) {
         if (key === 'licenses') {
           count++;
         }
       });
 
-      schema.expand(pkg); 
+      config.expand(pkg); 
       assert.equal(count, 1);
       cb();
     });
@@ -474,7 +486,7 @@ describe('expand-pkg (no git repository)', function() {
         ]
       };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(!res.licenses);
       assert(res.license);
       assert.equal(typeof res.license, 'string');
@@ -486,7 +498,7 @@ describe('expand-pkg (no git repository)', function() {
         licenses: {type: 'MIT', url: 'https://github.com/jonschlinkert/test-project/blob/master/LICENSE-MIT'}
       };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(!res.licenses);
       assert(res.license);
       assert.equal(typeof res.license, 'string');
@@ -496,63 +508,63 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('dependencies', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should remove dependencies when empty when `omitEmpty` is true', function() {
       var pkg = {dependencies: {}};
-      var res = schema.expand(pkg, {omitEmpty: true});
+      var res = config.expand(pkg, {omitEmpty: true});
       assert(!res.dependencies);
     });
   });
 
   describe('devDependencies', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should remove empty devDependencies when omitEmpty is true', function() {
       var pkg = {devDependencies: {}};
-      var res = schema.expand(pkg, {omitEmpty: true});
+      var res = config.expand(pkg, {omitEmpty: true});
       assert(!res.devDependencies);
     });
   });
 
   describe('engineStrict', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should delete engineStrict and replace it with engine-strict', function() {
       var pkg = { engineStrict: true };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(typeof res.engineStrict, 'undefined');
       assert.equal(res['engine-strict'], true);
     });
 
     it('should remove engineStrict from the object', function() {
       var pkg = { engineStrict: true };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(!res.hasOwnProperty('engineStrict'));
     });
   });
 
   describe('engine-strict', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should warn when engine-strict value is invalid', function(cb) {
       var pkg = { 'engine-strict': 'foo' };
       var count = 0;
 
-      schema.on('warning', function(method, key, err) {
+      config.on('warning', function(method, key, err) {
         if (key === 'engine-strict') {
           count++;
         }
       });
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(count, 1);
       cb();
     });
@@ -560,13 +572,13 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('scripts', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should clean up mocha scripts', function() {
       var pkg = {scripts: {test: 'mocha -R spec'} };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.scripts);
       assert.equal(typeof res.scripts, 'object');
       assert.equal(res.scripts.test, 'mocha');
@@ -575,7 +587,7 @@ describe('expand-pkg (no git repository)', function() {
     it('should return scripts if it is an object', function() {
       var pkg = {scripts: {test: 'foo'} };
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.scripts);
       assert.equal(typeof res.scripts, 'object');
       assert.equal(res.scripts.test, 'foo');
@@ -584,12 +596,12 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('keywords', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should use the name to create keywords when the array is empty', function() {
       var pkg = { keywords: [] };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(res.keywords[0], 'project');
       assert.equal(res.keywords[1], 'test');
       assert.equal(res.keywords.length, 2);
@@ -597,7 +609,7 @@ describe('expand-pkg (no git repository)', function() {
 
     it('should sort keywords', function() {
       var pkg = { keywords: ['foo', 'bar', 'baz'] };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(res.keywords[0], 'bar');
       assert.equal(res.keywords[1], 'baz');
       assert.equal(res.keywords[2], 'foo');
@@ -605,27 +617,27 @@ describe('expand-pkg (no git repository)', function() {
 
     it('should remove duplicates', function() {
       var pkg = { keywords: ['foo', 'foo', 'foo', 'foo', 'bar', 'baz'] };
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert.equal(res.keywords.length, 3);
     });
   });
 
   describe('preferGlobal', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should warn when preferGlobal is defined and `bin` is not defined', function(cb) {
       var pkg = {preferGlobal: true};
       var count = 0;
 
-      schema.on('warning', function(method, key, err) {
+      config.on('warning', function(method, key, err) {
         if (key === 'preferGlobal') {
           count++;
         }
       });
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.preferGlobal);
       assert.equal(count, 1);
       cb();
@@ -635,13 +647,13 @@ describe('expand-pkg (no git repository)', function() {
       var pkg = {preferGlobal: true, bin: 'main.js'};
       var count = 0;
 
-      schema.on('warning', function(method, key, err) {
+      config.on('warning', function(method, key, err) {
         if (key === 'preferGlobal') {
           count++;
         }
       });
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.preferGlobal);
       assert.equal(count, 0);
       cb();
@@ -650,7 +662,7 @@ describe('expand-pkg (no git repository)', function() {
     it('should return bin as-is when it is a string', function() {
       var pkg = {bin: 'main.js'};
 
-      var res = schema.expand(pkg);
+      var res = config.expand(pkg);
       assert(res.bin);
       assert.equal(res.bin, 'main.js');
     });
@@ -658,20 +670,20 @@ describe('expand-pkg (no git repository)', function() {
 
   describe('bin', function() {
     beforeEach(function() {
-      schema = new Expander({verbose: false});
+      config = new Expander({verbose: false});
     });
 
     it('should not emit a warning when bin file string exists', function(cb) {
       var pkg = {bin: 'main.js'};
       var count = 0;
 
-      schema.on('warning', function(method, key, err) {
+      config.on('warning', function(method, key, err) {
         if (key === 'bin') {
           count++;
         }
       });
 
-      schema.expand(pkg); 
+      config.expand(pkg); 
       assert.equal(count, 0);
       cb();
     });
@@ -680,13 +692,13 @@ describe('expand-pkg (no git repository)', function() {
       var pkg = {bin: {foo: 'main.js'}};
       var count = 0;
 
-      schema.on('warning', function(method, key, err) {
+      config.on('warning', function(method, key, err) {
         if (key === 'bin') {
           count++;
         }
       });
 
-      schema.expand(pkg); 
+      config.expand(pkg); 
       assert.equal(count, 0);
       cb();
     });
@@ -695,13 +707,13 @@ describe('expand-pkg (no git repository)', function() {
       var pkg = {bin: 'bin/foo.js'};
       var count = 0;
 
-      schema.on('warning', function(method, key, err) {
+      config.on('warning', function(method, key, err) {
         if (key === 'bin') {
           count++;
         }
       });
 
-      schema.expand(pkg); 
+      config.expand(pkg); 
       assert.equal(count, 1);
       cb();
     });
@@ -710,13 +722,13 @@ describe('expand-pkg (no git repository)', function() {
       var pkg = {bin: {foo: 'bin/foo.js'}};
       var count = 0;
 
-      schema.on('warning', function(method, key, err) {
+      config.on('warning', function(method, key, err) {
         if (key === 'bin') {
           count++;
         }
       });
 
-      schema.expand(pkg); 
+      config.expand(pkg); 
       assert.equal(count, 1);
       cb();
     });

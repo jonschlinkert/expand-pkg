@@ -12,7 +12,7 @@ var repo;
 var project = path.resolve(__dirname, 'fixtures/project-no-package');
 var cwd = process.cwd();
 
-describe('normalize', function() {
+describe('expand (no package.json)', function() {
   beforeEach(function() {
     config = new Expander({verbose: false});
   });
@@ -270,6 +270,18 @@ describe('normalize', function() {
       var res = config.expand(pkg);
       assert(res.homepage);
       assert.equal(res.homepage, 'https://github.com/jonschlinkert/project-no-package');
+    });
+  });
+
+  describe('owner', function() {
+    it('should get owner from the git url', function() {
+      var res = config.expand({});
+      assert.equal(res.owner, 'jonschlinkert');
+    });
+
+    it('should get owner from the repository', function() {
+      var res = config.expand({repository: 'doowb/foo'});
+      assert.equal(res.owner, 'doowb');
     });
   });
 
