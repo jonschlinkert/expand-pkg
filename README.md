@@ -110,9 +110,7 @@ var pkg = config.expand(require('./package.json'));
 
 ### options.knownOnly
 
-**Type**
-
-: `boolean`
+**Type**: `boolean`
 
 **Default**: `undefined`
 
@@ -128,9 +126,7 @@ console.log(config.expand({author: 'Brian Woodward', foo: 'bar'}));
 
 ### options.pick
 
-**Type**
-
-: `array`
+**Type**: `array`
 
 **Default**: `undefined`
 
@@ -138,9 +134,7 @@ Filter the resulting object to contain only the specified keys.
 
 ### options.omit
 
-**Type**
-
-: `array`
+**Type**: `array`
 
 **Default**: `undefined`
 
@@ -168,9 +162,7 @@ console.log(pkg.name);
 
 ### options.extend
 
-**Type**
-
-: `boolean`
+**Type**: `boolean`
 
 **Default**: `undefined`
 
