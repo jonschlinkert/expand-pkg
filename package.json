@@ -1,6 +1,6 @@
 {
   "name": "expand-pkg",
-  "description": "Parse values in package.json into objects that can be used as context in templates.",
+  "description": "Parse string values in package.json into objects.",
   "version": "0.1.0",
   "homepage": "https://github.com/jonschlinkert/expand-pkg",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
@@ -27,11 +27,11 @@
     "kind-of": "^3.0.2",
     "lazy-cache": "^1.0.3",
     "mixin-deep": "^1.1.3",
-    "normalize-pkg": "^0.3.5",
+    "normalize-pkg": "^0.3.6",
     "omit-empty": "^0.3.3",
     "parse-author": "^0.2.1",
     "parse-git-config": "^0.4.0",
-    "repo-utils": "^0.2.0"
+    "repo-utils": "^0.2.1"
   },
   "devDependencies": {
     "delete": "^0.3.0",
@@ -72,14 +72,17 @@
       "gulp-format-md"
     ],
     "related": {
+      "highlight": "normalize-pkg",
       "list": [
-        "update"
+        "normalize-pkg",
+        "repo-utils",
+        "sync-pkg"
       ]
     },
     "reflinks": [
       "map-schema",
-      "verb",
-      "normalize-pkg"
+      "normalize-pkg",
+      "verb"
     ],
     "lint": {
       "reflinks": true
