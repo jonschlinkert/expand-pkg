@@ -292,7 +292,7 @@ describe('expand (no package.json)', function() {
       assert.equal(res.author.name, 'Jon Schlinkert');
     });
 
-    it('should return an author object as-is', function () {
+    it('should return an author object as-is', function() {
       var pkg = {
         author: {
           name: 'Jon Schlinkert',
@@ -350,7 +350,7 @@ describe('expand (no package.json)', function() {
         assert(!res.hasOwnProperty('contributors'));
       });
 
-      it('should return an author array as-is', function () {
+      it('should return an author array as-is', function() {
         var pkg = {
           contributors: [{
             name: 'Jon Schlinkert',

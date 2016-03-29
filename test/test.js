@@ -37,7 +37,6 @@ describe('normalize', function() {
     del(git, cb);
   });
 
-
   describe('Config', function() {
     it('should instantiate without new', function() {
       config = Config({foo: 'bar'});
@@ -422,7 +421,7 @@ describe('normalize', function() {
       assert.equal(res.author.name, 'Jon Schlinkert');
     });
 
-    it('should return an author object as-is', function () {
+    it('should return an author object as-is', function() {
       var pkg = {
         author: {
           name: 'Jon Schlinkert',
@@ -435,7 +434,7 @@ describe('normalize', function() {
       assert.equal(res.author.url, 'https://github.com/jonschlinkert');
     });
 
-    it('should parse an author string', function () {
+    it('should parse an author string', function() {
       var pkg = {
         author: 'Jon Schlinkert (https://github.com/jonschlinkert)'
       };
@@ -444,7 +443,7 @@ describe('normalize', function() {
       assert.equal(res.author.name, 'Jon Schlinkert');
     });
 
-    it('should parse an array of author strings', function () {
+    it('should parse an array of author strings', function() {
       var pkg = {
         author: ['Jon Schlinkert (https://github.com/jonschlinkert)']
       };
@@ -498,7 +497,7 @@ describe('normalize', function() {
         assert(!res.hasOwnProperty('contributors'));
       });
 
-      it('should return an author array as-is', function () {
+      it('should return an author array as-is', function() {
         var pkg = {
           contributors: [{
             name: 'Jon Schlinkert',

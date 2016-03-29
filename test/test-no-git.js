@@ -283,7 +283,7 @@ describe('expand-pkg (no git repository)', function() {
       assert.equal(res.author.name, 'Jon Schlinkert');
     });
 
-    it('should return an author object as-is', function () {
+    it('should return an author object as-is', function() {
       var pkg = {
         author: {
           name: 'Jon Schlinkert',
@@ -341,7 +341,7 @@ describe('expand-pkg (no git repository)', function() {
         assert(!res.hasOwnProperty('contributors'));
       });
 
-      it('should not modify a contributors array with one object', function () {
+      it('should not modify a contributors array with one object', function() {
         var pkg = {
           contributors: [{
             name: 'Jon Schlinkert',
@@ -354,7 +354,7 @@ describe('expand-pkg (no git repository)', function() {
         assert.equal(res.contributors[0].url, 'https://github.com/jonschlinkert');
       });
 
-      it('should not modify array of contributor objects', function () {
+      it('should not modify array of contributor objects', function() {
         var pkg = {
           contributors: [
             {name: 'Jon Schlinkert', url: 'https://github.com/jonschlinkert'},
@@ -369,7 +369,7 @@ describe('expand-pkg (no git repository)', function() {
         assert.equal(res.contributors[1].url, 'https://github.com/doowb');
       });
 
-      it('should parse an array of contributor strings', function () {
+      it('should parse an array of contributor strings', function() {
         var pkg = {
           contributors: [
             'Jon Schlinkert (https://github.com/jonschlinkert)',
