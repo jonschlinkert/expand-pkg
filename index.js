@@ -6,10 +6,10 @@ var schema = require('./lib/schema');
 var utils = require('./lib/utils');
 
 /**
- * Create an instance of `ExpandPkg` with the given `options`.
+ * Create an instance of `Config` with the given `options`.
  *
  * ```js
- * var config = new ExpandPkg();
+ * var config = new Config();
  * var pkg = config.expand({
  *   author: 'Jon Schlinkert (https://github.com/jonschlinkert)'
  * });
@@ -20,9 +20,9 @@ var utils = require('./lib/utils');
  * @api public
  */
 
-function ExpandPkg(options) {
-  if (!(this instanceof ExpandPkg)) {
-    return new ExpandPkg(options);
+function Config(options) {
+  if (!(this instanceof Config)) {
+    return new Config(options);
   }
 
   this.options = options || {};
@@ -36,7 +36,7 @@ function ExpandPkg(options) {
  * Inherit `Emitter`
  */
 
-Emitter(ExpandPkg.prototype);
+Emitter(Config.prototype);
 
 /**
  * Add a field to the schema, or overwrite or extend an existing field. The last
@@ -47,7 +47,7 @@ Emitter(ExpandPkg.prototype);
  * - `required` **{Boolean}**: define `true` if the property is required
  *
  * ```js
- * var config = new ExpandPkg();
+ * var config = new Config();
  *
  * config.field('foo', 'string', {
  *   default: 'bar'
@@ -65,7 +65,7 @@ Emitter(ExpandPkg.prototype);
  * @api public
  */
 
-ExpandPkg.prototype.field = function(field, type, options) {
+Config.prototype.field = function(field, type, options) {
   if (typeof options === 'function') {
     options = { normalize: options };
   }
@@ -81,7 +81,7 @@ ExpandPkg.prototype.field = function(field, type, options) {
  * [fields](#field) registered on the schema.
  *
  * ```js
- * var config = new ExpandPkg();
+ * var config = new Config();
  * var pkg = config.expand(require('./package.json'));
  * ```
  * @param {Object} `pkg` The `package.json` object to expand
@@ -90,7 +90,7 @@ ExpandPkg.prototype.field = function(field, type, options) {
  * @api public
  */
 
-ExpandPkg.prototype.expand = function(pkg, options) {
+Config.prototype.expand = function(pkg, options) {
   if (typeof pkg === 'undefined') {
     pkg = path.resolve(process.cwd(), 'package.json');
   }
@@ -101,7 +101,7 @@ ExpandPkg.prototype.expand = function(pkg, options) {
 };
 
 /**
- * ExpandPkg
+ * Config
  */
 
-module.exports = ExpandPkg;
+module.exports = Config;

@@ -5,7 +5,7 @@ var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
 var gitty = require('gitty');
-var Expander = require('..');
+var Config = require('..');
 var config;
 var repo;
 
@@ -14,7 +14,7 @@ var cwd = process.cwd();
 
 describe('expand (no package.json)', function() {
   beforeEach(function() {
-    config = new Expander({verbose: false});
+    config = new Config({verbose: false});
   });
 
   before(function() {
@@ -28,13 +28,13 @@ describe('expand (no package.json)', function() {
 
   describe('omit', function() {
     it('should remove a field on options.omit', function() {
-      config = new Expander({omit: 'version'});
+      config = new Config({omit: 'version'});
       var res = config.expand({});
       assert.equal(typeof res.version, 'undefined');
     });
 
     it('should remove an array of fields on options.omit', function() {
-      config = new Expander({omit: ['version', 'main']});
+      config = new Config({omit: ['version', 'main']});
       var res = config.expand({});
       assert.equal(typeof res.version, 'undefined');
       assert.equal(typeof res.main, 'undefined');
@@ -115,7 +115,7 @@ describe('expand (no package.json)', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 1);
       cb();
     });
@@ -341,7 +341,7 @@ describe('expand (no package.json)', function() {
 
   describe('people', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     describe('contributors', function() {
@@ -398,7 +398,7 @@ describe('expand (no package.json)', function() {
 
   describe('bugs', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should use the given bugs value', function() {
@@ -467,13 +467,13 @@ describe('expand (no package.json)', function() {
 
   describe('license', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should convert a license object to a string', function() {
       var pkg = {
         license: {
-          type: 'MIT', 
+          type: 'MIT',
           url: 'https://github.com/jonschlinkert/project-no-package/blob/master/LICENSE-MIT'
         }
       };
@@ -486,7 +486,7 @@ describe('expand (no package.json)', function() {
 
   describe('licenses', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should emit a deprecation warning when licenses is defined', function(cb) {
@@ -499,7 +499,7 @@ describe('expand (no package.json)', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 1);
       cb();
     });
@@ -533,7 +533,7 @@ describe('expand (no package.json)', function() {
 
   describe('dependencies', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should remove dependencies when empty when `omitEmpty` is true', function() {
@@ -545,7 +545,7 @@ describe('expand (no package.json)', function() {
 
   describe('devDependencies', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should remove empty devDependencies when omitEmpty is true', function() {
@@ -557,7 +557,7 @@ describe('expand (no package.json)', function() {
 
   describe('engineStrict', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should delete engineStrict and replace it with engine-strict', function() {
@@ -576,7 +576,7 @@ describe('expand (no package.json)', function() {
 
   describe('engine-strict', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should warn when engine-strict value is invalid', function(cb) {
@@ -597,7 +597,7 @@ describe('expand (no package.json)', function() {
 
   describe('scripts', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should clean up mocha scripts', function() {
@@ -621,7 +621,7 @@ describe('expand (no package.json)', function() {
 
   describe('keywords', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should use the name to create keywords when the array is empty', function() {
@@ -649,7 +649,7 @@ describe('expand (no package.json)', function() {
 
   describe('preferGlobal', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should warn when preferGlobal is defined and `bin` is not defined', function(cb) {
@@ -695,7 +695,7 @@ describe('expand (no package.json)', function() {
 
   describe('bin', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should not emit a warning when bin file string exists', function(cb) {
@@ -708,7 +708,7 @@ describe('expand (no package.json)', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 0);
       cb();
     });
@@ -723,7 +723,7 @@ describe('expand (no package.json)', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 0);
       cb();
     });

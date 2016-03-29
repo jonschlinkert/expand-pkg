@@ -6,7 +6,7 @@ var path = require('path');
 var assert = require('assert');
 var gitty = require('gitty');
 var del = require('delete');
-var Expander = require('..');
+var Config = require('..');
 var config;
 var repo;
 
@@ -16,7 +16,7 @@ var cwd = process.cwd();
 
 describe('normalize', function() {
   beforeEach(function() {
-    config = new Expander({verbose: false});
+    config = new Config({verbose: false});
   });
 
   before(function(cb) {
@@ -38,26 +38,26 @@ describe('normalize', function() {
   });
 
 
-  describe('Expander', function() {
+  describe('Config', function() {
     it('should instantiate without new', function() {
-      config = Expander({foo: 'bar'});
+      config = Config({foo: 'bar'});
       assert.equal(config.options.foo, 'bar');
     });
 
     it('should instantiate with an options object', function() {
-      config = new Expander({foo: 'bar'});
+      config = new Config({foo: 'bar'});
       assert.equal(config.options.foo, 'bar');
     });
 
     it('should instantiate without an options object', function() {
-      config = new Expander();
+      config = new Config();
       assert.deepEqual(config.options, {});
     });
   });
 
   describe('.field', function() {
     it('should add a custom field', function() {
-      config = new Expander({omit: 'version'})
+      config = new Config({omit: 'version'})
       config.field('foo', 'string', {
         normalize: function(val, key, config, schema) {
           config[key] = {a: 'b'};
@@ -70,7 +70,7 @@ describe('normalize', function() {
     });
 
     it('should convert a function to a `normalize` function', function() {
-      config = new Expander({omit: 'version'})
+      config = new Config({omit: 'version'})
       config.field('foo', 'string', function(val, key, config, schema) {
         config[key] = {a: 'b'};
         return config[key];
@@ -81,14 +81,14 @@ describe('normalize', function() {
     });
 
     it('should remove an array of fields on options.omit', function() {
-      config = new Expander({omit: ['version', 'main']});
+      config = new Config({omit: ['version', 'main']});
       var res = config.expand({});
       assert.equal(typeof res.version, 'undefined');
       assert.equal(typeof res.main, 'undefined');
     });
 
     it('should extend an existing field', function() {
-      config = new Expander({knownOnly: true});
+      config = new Config({knownOnly: true});
       config.schema.fields = {};
 
       config.field('foo', 'string', {
@@ -131,13 +131,13 @@ describe('normalize', function() {
 
   describe('omit', function() {
     it('should remove a field on options.omit', function() {
-      config = new Expander({omit: 'version'});
+      config = new Config({omit: 'version'});
       var res = config.expand({});
       assert.equal(typeof res.version, 'undefined');
     });
 
     it('should remove an array of fields on options.omit', function() {
-      config = new Expander({omit: ['version', 'main']});
+      config = new Config({omit: ['version', 'main']});
       var res = config.expand({});
       assert.equal(typeof res.version, 'undefined');
       assert.equal(typeof res.main, 'undefined');
@@ -489,7 +489,7 @@ describe('normalize', function() {
 
   describe('people', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     describe('contributors', function() {
@@ -546,7 +546,7 @@ describe('normalize', function() {
 
   describe('bugs', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should use the given bugs value', function() {
@@ -615,7 +615,7 @@ describe('normalize', function() {
 
   describe('license', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should convert a license object to a string', function() {
@@ -634,7 +634,7 @@ describe('normalize', function() {
 
   describe('licenses', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should emit a deprecation warning when licenses is defined', function(cb) {
@@ -681,7 +681,7 @@ describe('normalize', function() {
 
   describe('dependencies', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should remove dependencies when empty when `omitEmpty` is true', function() {
@@ -693,7 +693,7 @@ describe('normalize', function() {
 
   describe('devDependencies', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should remove empty devDependencies when omitEmpty is true', function() {
@@ -705,7 +705,7 @@ describe('normalize', function() {
 
   describe('engineStrict', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should delete engineStrict and replace it with engine-strict', function() {
@@ -724,7 +724,7 @@ describe('normalize', function() {
 
   describe('engine-strict', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should warn when engine-strict value is invalid', function(cb) {
@@ -745,7 +745,7 @@ describe('normalize', function() {
 
   describe('scripts', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should clean up mocha scripts', function() {
@@ -769,7 +769,7 @@ describe('normalize', function() {
 
   describe('keywords', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should use the name to create keywords when the array is empty', function() {
@@ -797,7 +797,7 @@ describe('normalize', function() {
 
   describe('preferGlobal', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should warn when preferGlobal is defined and `bin` is not defined', function(cb) {
@@ -843,7 +843,7 @@ describe('normalize', function() {
 
   describe('bin', function() {
     beforeEach(function() {
-      config = new Expander({verbose: false});
+      config = new Config({verbose: false});
     });
 
     it('should not emit a warning when bin file string exists', function(cb) {

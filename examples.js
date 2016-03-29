@@ -1,7 +1,7 @@
 'use strict';
 
-var ExpandPkg = require('./');
-var pkg = new ExpandPkg();
+var Config = require('./');
+var config = new Config();
 
-// console.log(pkg.expand(require('./package')))
-console.log(pkg.expand(require('./test/fixtures/authors-condensed')))
+// console.log(config.expand(require('./package')))
+console.log(config.expand(require('./test/fixtures/authors-condensed')))
