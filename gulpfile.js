@@ -5,7 +5,6 @@ var mocha = require('gulp-mocha');
 var unused = require('gulp-unused');
 var istanbul = require('gulp-istanbul');
 var eslint = require('gulp-eslint');
-var globKeys = require('glob-keys');
 
 var lint = ['index.js', 'lib/**/*.js'];
 
@@ -29,7 +28,7 @@ gulp.task('lint', function() {
 
 gulp.task('unused', function() {
   return gulp.src(['index.js', 'lib/**/*.js'])
-    .pipe(unused({keys: globKeys('lib/utils.js')}));
+    .pipe(unused({keys: Object.keys(require('./lib/utils.js'))}));
 });
 
 gulp.task('default', ['test', 'lint']);
