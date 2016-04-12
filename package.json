@@ -27,11 +27,11 @@
     "kind-of": "^3.0.2",
     "lazy-cache": "^1.0.3",
     "mixin-deep": "^1.1.3",
-    "normalize-pkg": "^0.3.6",
-    "omit-empty": "^0.3.4",
+    "normalize-pkg": "^0.3.7",
+    "omit-empty": "^0.3.6",
     "parse-author": "^0.2.1",
-    "parse-git-config": "^0.4.0",
-    "repo-utils": "^0.2.1"
+    "parse-git-config": "^0.4.2",
+    "repo-utils": "^0.3.1"
   },
   "devDependencies": {
     "delete": "^0.3.0",
