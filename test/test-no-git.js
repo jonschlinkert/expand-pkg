@@ -114,7 +114,7 @@ describe('expand-pkg (no git repository)', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 1);
       cb();
     });
@@ -239,7 +239,7 @@ describe('expand-pkg (no git repository)', function() {
       assert(res.homepage);
       assert.equal(res.repository, 'jonschlinkert/test-project');
     });
-    
+
     it('should use the given homepage', function() {
       var pkg = {homepage: 'https://github.com/assemble/assemble'};
       var res = config.expand(pkg);
@@ -412,7 +412,7 @@ describe('expand-pkg (no git repository)', function() {
 
       var res = config.expand(pkg);
       assert(res.bugs);
-      assert.equal(res.bugs.url, 'jonschlinkert/foo');
+      assert.equal(res.bugs.url, 'https://github.com/jonschlinkert/foo/issues');
     });
 
     it('should use the value function passed on options', function() {
@@ -479,7 +479,7 @@ describe('expand-pkg (no git repository)', function() {
     it('should convert a license object to a string', function() {
       var pkg = {
         license: {
-          type: 'MIT', 
+          type: 'MIT',
           url: 'https://github.com/jonschlinkert/test-project/blob/master/LICENSE-MIT'
         }
       };
@@ -505,7 +505,7 @@ describe('expand-pkg (no git repository)', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 1);
       cb();
     });
@@ -714,7 +714,7 @@ describe('expand-pkg (no git repository)', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 0);
       cb();
     });
@@ -729,7 +729,7 @@ describe('expand-pkg (no git repository)', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 0);
       cb();
     });

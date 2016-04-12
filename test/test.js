@@ -217,7 +217,7 @@ describe('normalize', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 1);
       cb();
     });
@@ -331,11 +331,11 @@ describe('normalize', function() {
   });
 
   describe('homepage', function() {
-    before(function(cb) {
+    beforeEach(function(cb) {
       repo.addRemote('origin', 'https://github.com/jonschlinkert/test-project.git', cb);
     });
 
-    after(function(cb) {
+    afterEach(function(cb) {
       repo.removeRemote('origin', cb);
     });
 
@@ -349,11 +349,6 @@ describe('normalize', function() {
       var res = config.expand({});
       assert(res.homepage);
       assert.equal(res.repository, 'jonschlinkert/test-project');
-    });
-
-    it('should set `remote`', function() {
-      var res = config.expand({});
-      assert.equal(res.git.remote.url, 'https://github.com/jonschlinkert/test-project.git');
     });
 
     it('should use the given homepage', function() {
@@ -548,12 +543,12 @@ describe('normalize', function() {
       config = new Config({verbose: false});
     });
 
-    it('should use the given bugs value', function() {
+    it('should normalize the given bugs value', function() {
       var pkg = {bugs: {url: 'jonschlinkert/foo'}};
 
       var res = config.expand(pkg);
       assert(res.bugs);
-      assert.equal(res.bugs.url, 'jonschlinkert/foo');
+      assert.equal(res.bugs.url, 'https://github.com/jonschlinkert/foo/issues');
     });
 
     it('should use the value function passed on options', function() {
@@ -620,7 +615,7 @@ describe('normalize', function() {
     it('should convert a license object to a string', function() {
       var pkg = {
         license: {
-          type: 'MIT', 
+          type: 'MIT',
           url: 'https://github.com/jonschlinkert/test-project/blob/master/LICENSE-MIT'
         }
       };
@@ -646,7 +641,7 @@ describe('normalize', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 1);
       cb();
     });
@@ -855,7 +850,7 @@ describe('normalize', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 0);
       cb();
     });
@@ -870,7 +865,7 @@ describe('normalize', function() {
         }
       });
 
-      config.expand(pkg); 
+      config.expand(pkg);
       assert.equal(count, 0);
       cb();
     });

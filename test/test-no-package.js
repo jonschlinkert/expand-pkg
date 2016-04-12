@@ -406,7 +406,7 @@ describe('expand (no package.json)', function() {
 
       var res = config.expand(pkg);
       assert(res.bugs);
-      assert.equal(res.bugs.url, 'jonschlinkert/foo');
+      assert.equal(res.bugs.url, 'https://github.com/jonschlinkert/foo/issues');
     });
 
     it('should use the value function passed on options', function() {
