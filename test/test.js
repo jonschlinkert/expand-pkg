@@ -442,7 +442,6 @@ describe('normalize', function() {
       var pkg = {
         author: ['Jon Schlinkert (https://github.com/jonschlinkert)']
       };
-
       var res = config.expand(pkg);
       assert.equal(res.author.name, 'Jon Schlinkert');
     });
