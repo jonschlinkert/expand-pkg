@@ -1,6 +1,7 @@
 'use strict';
 
 var path = require('path');
+var debug = require('debug')('expand:pkg');
 var Emitter = require('component-emitter');
 var schema = require('./lib/schema');
 var utils = require('./lib/utils');
@@ -25,6 +26,7 @@ function Config(options) {
     return new Config(options);
   }
 
+  debug('initializing <%s>', __filename);
   this.options = options || {};
   this.schema = schema(this.options);
   this.data = this.schema.data;
@@ -66,6 +68,7 @@ Emitter(Config.prototype);
  */
 
 Config.prototype.field = function(field, type, options) {
+  debug('adding "%s"', field);
   if (typeof options === 'function') {
     options = { normalize: options };
   }
@@ -95,7 +98,7 @@ Config.prototype.expand = function(pkg, options) {
     pkg = path.resolve(process.cwd(), 'package.json');
   }
   if (typeof pkg === 'string') {
-    pkg = utils.requirePackage(pkg);
+    pkg = utils.loadPkg.sync(pkg);
   }
   return this.schema.normalize(pkg, options);
 };
