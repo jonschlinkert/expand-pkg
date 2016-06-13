@@ -4,7 +4,6 @@ require('mocha');
 var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
-var gitty = require('gitty');
 var Config = require('..');
 var config;
 var repo;

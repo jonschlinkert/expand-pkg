@@ -4,12 +4,14 @@ require('mocha');
 var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
+var exists = require('fs-exists-sync');
 var gitty = require('gitty');
 var del = require('delete');
 var Config = require('..');
 var config;
 var repo;
 
+var origin = 'https://github.com/jonschlinkert/test-project.git';
 var project = path.resolve(__dirname, 'fixtures/project');
 var git = path.resolve(project, '.git');
 var cwd = process.cwd();
@@ -23,7 +25,9 @@ describe('normalize', function() {
     process.chdir(project);
     del(git, function(err) {
       if (err) return cb(err);
-
+      if (exists('.git')) {
+        return cb();
+      }
       repo = gitty(project);
       repo.initSync();
       repo.addSync(['.']);
@@ -332,11 +336,18 @@ describe('normalize', function() {
 
   describe('homepage', function() {
     beforeEach(function(cb) {
-      repo.addRemote('origin', 'https://github.com/jonschlinkert/test-project.git', cb);
+      repo.addRemote('origin', origin, cb);
     });
 
     afterEach(function(cb) {
-      repo.removeRemote('origin', cb);
+      repo.getRemotes(function(err, remotes) {
+        if (err) return cb(err);
+        if (remotes.origin !== origin) {
+          cb(new Error('expected origin to be: ' + origin));
+        } else {
+          repo.removeRemote('origin', cb);
+        }
+      });
     });
 
     it('should add a homepage from git repository', function() {
@@ -371,12 +382,19 @@ describe('normalize', function() {
   });
 
   describe('owner', function() {
-    before(function(cb) {
-      repo.addRemote('origin', 'https://github.com/jonschlinkert/test-project.git', cb);
+    beforeEach(function(cb) {
+      repo.addRemote('origin', origin, cb);
     });
 
-    after(function(cb) {
-      repo.removeRemote('origin', cb);
+    afterEach(function(cb) {
+      repo.getRemotes(function(err, remotes) {
+        if (err) return cb(err);
+        if (remotes.origin !== origin) {
+          cb(new Error('expected origin to be: ' + origin));
+        } else {
+          repo.removeRemote('origin', cb);
+        }
+      });
     });
 
     it('should get owner from the git url', function() {
@@ -397,12 +415,19 @@ describe('normalize', function() {
   });
 
   describe('author', function() {
-    before(function(cb) {
-      repo.addRemote('origin', 'https://github.com/jonschlinkert/test-project.git', cb);
+    beforeEach(function(cb) {
+      repo.addRemote('origin', origin, cb);
     });
 
-    after(function(cb) {
-      repo.removeRemote('origin', cb);
+    afterEach(function(cb) {
+      repo.getRemotes(function(err, remotes) {
+        if (err) return cb(err);
+        if (remotes.origin !== origin) {
+          cb(new Error('expected origin to be: ' + origin));
+        } else {
+          repo.removeRemote('origin', cb);
+        }
+      });
     });
 
     it('should not add an empty author field', function() {
@@ -427,6 +452,7 @@ describe('normalize', function() {
       var res = config.expand(pkg);
       assert.equal(res.author.name, 'Jon Schlinkert');
       assert.equal(res.author.url, 'https://github.com/jonschlinkert');
+      assert.equal(res.author.username, 'jonschlinkert');
     });
 
     it('should parse an author string', function() {
@@ -436,6 +462,8 @@ describe('normalize', function() {
 
       var res = config.expand(pkg);
       assert.equal(res.author.name, 'Jon Schlinkert');
+      assert.equal(res.author.url, 'https://github.com/jonschlinkert');
+      assert.equal(res.author.username, 'jonschlinkert');
     });
 
     it('should parse an array of author strings', function() {
@@ -444,6 +472,18 @@ describe('normalize', function() {
       };
       var res = config.expand(pkg);
       assert.equal(res.author.name, 'Jon Schlinkert');
+      assert.equal(res.author.url, 'https://github.com/jonschlinkert');
+      assert.equal(res.author.username, 'jonschlinkert');
+    });
+
+    it('should parse an array of authors strings', function() {
+      var pkg = {
+        authors: ['Jon Schlinkert (https://github.com/jonschlinkert)']
+      };
+      var res = config.expand(pkg);
+      assert.equal(res.authors[0].name, 'Jon Schlinkert');
+      assert.equal(res.authors[0].url, 'https://github.com/jonschlinkert');
+      assert.equal(res.authors[0].username, 'jonschlinkert');
     });
   });
 
@@ -507,12 +547,19 @@ describe('normalize', function() {
   });
 
   describe('repository', function() {
-    before(function(cb) {
-      repo.addRemote('origin', 'https://github.com/jonschlinkert/test-project.git', cb);
+    beforeEach(function(cb) {
+      repo.addRemote('origin', origin, cb);
     });
 
-    after(function(cb) {
-      repo.removeRemote('origin', cb);
+    afterEach(function(cb) {
+      repo.getRemotes(function(err, remotes) {
+        if (err) return cb(err);
+        if (remotes.origin !== origin) {
+          cb(new Error('expected origin to be: ' + origin));
+        } else {
+          repo.removeRemote('origin', cb);
+        }
+      });
     });
 
     it('should use the given repository', function() {

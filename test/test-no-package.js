@@ -9,6 +9,7 @@ var Config = require('..');
 var config;
 var repo;
 
+var origin = 'https://github.com/jonschlinkert/project-no-package.git';
 var project = path.resolve(__dirname, 'fixtures/project-no-package');
 var cwd = process.cwd();
 
@@ -229,12 +230,23 @@ describe('expand (no package.json)', function() {
   });
 
   describe('homepage', function() {
-    before(function(cb) {
-      repo.addRemote('origin', 'https://github.com/jonschlinkert/project-no-package.git', cb);
+    beforeEach(function(cb) {
+      repo.addRemote('origin', origin, function() {
+        // ignore errors "exists" errors
+        cb();
+      });
     });
 
-    after(function(cb) {
-      repo.removeRemote('origin', cb);
+    afterEach(function(cb) {
+      repo.getRemotes(function(err, remotes) {
+        if (err) return cb(err);
+        if (remotes.origin !== origin) {
+          // cb(new Error('expected ' + remotes.origin + ' to be: ' + origin));
+          cb();
+        } else {
+          repo.removeRemote('origin', cb);
+        }
+      });
     });
 
     it('should add a homepage from git repository', function() {
@@ -366,12 +378,23 @@ describe('expand (no package.json)', function() {
   });
 
   describe('repository', function() {
-    before(function(cb) {
-      repo.addRemote('origin', 'https://github.com/jonschlinkert/project-no-package.git', cb);
+    beforeEach(function(cb) {
+      repo.addRemote('origin', origin, function() {
+        // ignore errors "exists" errors
+        cb();
+      });
     });
 
-    after(function(cb) {
-      repo.removeRemote('origin', cb);
+    afterEach(function(cb) {
+      repo.getRemotes(function(err, remotes) {
+        if (err) return cb(err);
+        if (remotes.origin !== origin) {
+          // cb(new Error('expected ' + remotes.origin + ' to be: ' + origin));
+          cb();
+        } else {
+          repo.removeRemote('origin', cb);
+        }
+      });
     });
 
     it('should use the given repository', function() {
