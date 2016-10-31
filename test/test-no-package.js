@@ -4,13 +4,18 @@ require('mocha');
 var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
+var exists = require('fs-exists-sync');
 var gitty = require('gitty');
+var del = require('delete');
+var utils = require('../lib/utils');
 var Config = require('..');
 var config;
 var repo;
+var user;
 
 var origin = 'https://github.com/jonschlinkert/project-no-package.git';
 var project = path.resolve(__dirname, 'fixtures/project-no-package');
+var git = path.resolve(project, '.git');
 var cwd = process.cwd();
 
 describe('expand (no package.json)', function() {
@@ -18,13 +23,28 @@ describe('expand (no package.json)', function() {
     config = new Config({verbose: false});
   });
 
-  before(function() {
+  before(function(cb) {
     process.chdir(project);
-    repo = gitty(project);
+    del(git, function(err) {
+      if (err) return cb(err);
+      if (!exists('.git')) {
+        repo = gitty(project);
+        repo.initSync();
+        repo.addSync(['.']);
+        repo.commitSync('first commit');
+        try {
+          user = utils.repo.gitUserName();
+        } catch (err) {
+          user = 'jonschlinkert';
+        }
+      }
+      cb();
+    });
   });
 
-  after(function() {
+  after(function(cb) {
     process.chdir(cwd);
+    del(git, cb);
   });
 
   describe('omit', function() {
@@ -281,6 +301,25 @@ describe('expand (no package.json)', function() {
   });
 
   describe('owner', function() {
+    beforeEach(function(cb) {
+      repo.addRemote('origin', origin, function() {
+        // ignore errors "exists" errors
+        cb();
+      });
+    });
+
+    afterEach(function(cb) {
+      repo.getRemotes(function(err, remotes) {
+        if (err) return cb(err);
+        if (remotes.origin !== origin) {
+          // cb(new Error('expected ' + remotes.origin + ' to be: ' + origin));
+          cb();
+        } else {
+          repo.removeRemote('origin', cb);
+        }
+      });
+    });
+
     it('should get owner from the git url', function() {
       var res = config.expand({});
       assert.equal(res.owner, 'jonschlinkert');

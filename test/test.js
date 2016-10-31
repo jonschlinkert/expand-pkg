@@ -8,13 +8,18 @@ var exists = require('fs-exists-sync');
 var gitty = require('gitty');
 var del = require('delete');
 var Config = require('..');
-var config;
-var repo;
 
 var origin = 'https://github.com/jonschlinkert/test-project.git';
 var project = path.resolve(__dirname, 'fixtures/project');
 var git = path.resolve(project, '.git');
 var cwd = process.cwd();
+var config;
+var repo;
+
+var ci = it;
+if (process.env.CI || process.env.TRAVIS || process.env.TRAVIS_CI) {
+  ci = it.skip;
+}
 
 describe('normalize', function() {
   beforeEach(function() {
@@ -350,13 +355,13 @@ describe('normalize', function() {
       });
     });
 
-    it('should add a homepage from git repository', function() {
+    ci('should add a homepage from git repository', function() {
       var res = config.expand({});
       assert(res.homepage);
       assert.equal(res.homepage, 'https://github.com/jonschlinkert/test-project');
     });
 
-    it('should add repository when setting hompage', function() {
+    ci('should add repository when setting hompage', function() {
       var res = config.expand({});
       assert(res.homepage);
       assert.equal(res.repository, 'jonschlinkert/test-project');
@@ -397,7 +402,7 @@ describe('normalize', function() {
       });
     });
 
-    it('should get owner from the git url', function() {
+    ci('should get owner from the git url', function() {
       var res = config.expand({});
       assert.equal(res.owner, 'jonschlinkert');
     });
@@ -569,7 +574,7 @@ describe('normalize', function() {
       assert.equal(res.repository, 'jonschlinkert/foo');
     });
 
-    it('should use the git remote origin url', function() {
+    ci('should use the git remote origin url', function() {
       var pkg = {repository: ''};
       var res = config.expand(pkg);
       assert(res.repository);

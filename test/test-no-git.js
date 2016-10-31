@@ -4,9 +4,11 @@ require('mocha');
 var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
+var utils = require('../lib/utils');
 var Config = require('..');
 var config;
 var repo;
+var user;
 
 var project = path.resolve(__dirname, 'fixtures/project-no-git');
 var cwd = process.cwd();
@@ -18,6 +20,11 @@ describe('expand-pkg (no git repository)', function() {
 
   before(function() {
     process.chdir(project);
+    try {
+      user = utils.repo.gitUserName();
+    } catch (err) {
+      user = 'jonschlinkert';
+    }
   });
 
   after(function() {
@@ -261,7 +268,7 @@ describe('expand-pkg (no git repository)', function() {
   describe('owner', function() {
     it('should get owner from the git url', function() {
       var res = config.expand({});
-      assert.equal(res.owner, 'jonschlinkert');
+      assert.equal(res.owner, user);
     });
 
     it('should get owner from the repository', function() {
