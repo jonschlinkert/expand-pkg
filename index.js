@@ -1,110 +1,98 @@
 'use strict';
 
-var path = require('path');
-var debug = require('debug')('expand:pkg');
-var Emitter = require('component-emitter');
-var schema = require('./lib/schema');
-var utils = require('./lib/utils');
+console.time('total');
+process.on('exit', () => console.timeEnd('total'));
 
-/**
- * Create an instance of `Config` with the given `options`.
- *
- * ```js
- * var config = new Config();
- * var pkg = config.expand({
- *   author: 'Jon Schlinkert (https://github.com/jonschlinkert)'
- * });
- * console.log(pkg);
- * //=> {name: 'Jon Schlinkert', url: 'https://github.com/jonschlinkert'}
- * ```
- * @param {Object} `options`
- * @api public
- */
+const url = require('url');
+const isUrl = require('is-url');
+const MapSchema = require('map-schema');
+const structs = require('./lib/structs');
+const keys = require('./lib/data/keys');
 
-function Config(options) {
-  if (!(this instanceof Config)) {
-    return new Config(options);
+class ExpandPackage extends MapSchema {
+  constructor(options, values = {}) {
+    super({ strict: true, ...options, values });
+    this.cwd = this.options.cwd || process.cwd();
   }
 
-  debug('initializing <%s>', __filename);
-  this.options = options || {};
-  this.schema = schema(this.options);
-  this.data = this.schema.data;
-  this.schema.on('warning', this.emit.bind(this, 'warning'));
-  this.schema.on('error', this.emit.bind(this, 'error'));
+  expand(pkg, options) {
+    for (let name of Object.keys(structs)) {
+      if (!this.fields.has(name)) {
+        this.field(name, structs[name](this));
+      }
+    }
+    return this.parse(pkg);
+  }
+
+  format(...args) {
+    let names = this.options.keys || keys;
+    let res = super.format(...args);
+    let pkg = {};
+    for (let name of names) {
+      if (res.hasOwnProperty(name) && res[name] !== void 0) {
+        pkg[name] = res[name];
+      }
+    }
+    return pkg;
+  }
 }
 
-/**
- * Inherit `Emitter`
- */
+let expander = new ExpandPackage({ validateKeys: true });
+let result = expander.expand({
+  name: '@foo/map-schema',
+  description: 'Normalize an object by running normalizers and validators that are mapped to a schema.',
+  version: '0.2.4',
+  foo: 'bar',
+  one: 'bar',
+  homepage: 'https://github.com/jonschlinkert/map-schema',
+  // author: 'Jon Schlinkert (https://github.com/jonschlinkert)',
+  author: {
+    name: 'Jon Schlinkert',
+    url: 'https://github.com/jonschlinkert'
+  },
+  contributors: [
+    'Brian Woodward (https://twitter.com/doowb)',
+    'Jon Schlinkert <jon.schlinkert@sellside.com> (http://twitter.com/jonschlinkert)'
+  ],
+  repository: 'jonschlinkert/map-schema',
+  // repository: { type: 'git', url: 'jonschlinkert/map-schema' },
+  private: false,
+  preferGlobal: false,
+  bugs: {
+    url: 'https://github.com/jonschlinkert/map-schema/issues'
+  },
+  license: 'MIT',
+  files: ['lib', 'bin', '/bin', './bin', 'templates'],
+  main: 'index.js',
+  engines: {
+    node: '>=0.10.0'
+  },
+  // bin: 'bin/cli.js',
+  bin: {
+    foo: 'bin/cli.js'
+  },
+  scripts: {
+    test: 'mocha',
+    cover: 'nyc --reporter=text --reporter=html mocha'
+  },
+  dependencies: {
+    'mixin-deep': '^2.0.0',
+    superstruct: '^0.6.0'
+  },
+  devDependencies: {
+    isobject: '^3.0.0',
+    mocha: '^3.2.0'
+  },
+  keywords: ['map', 'schema']
+});
 
-Emitter(Config.prototype);
+console.log(result.values)
+console.log(result.state);
+// console.log(result.fields.get('name').format({ scope: 'assemble', name: 'assemble' }));
+// console.log(result.format(result.values));
+// console.log(values.author.format());
+// console.log(values.homepage.format());
 
-/**
- * Add a field to the schema, or overwrite or extend an existing field. The last
- * argument is an `options` object that supports the following properties:
- *
- * - `normalize` **{Function}**: function to be called on the given package.json value when the `.expand` method is called
- * - `default` **{any}**: default value to be used when the package.json property is undefined.
- * - `required` **{Boolean}**: define `true` if the property is required
- *
- * ```js
- * var config = new Config();
- *
- * config.field('foo', 'string', {
- *   default: 'bar'
- * });
- *
- * var pkg = config.expand({});
- * console.log(pkg);
- * //=> {foo:  'bar'}
- * ```
- *
- * @param {String} `name` Field name (required)
- * @param {String|Array} `type` One or more native javascript types allowed for the property value (required)
- * @param {Object} `options`
- * @return {Object} Returns the instance
- * @api public
- */
-
-Config.prototype.field = function(field, type, options) {
-  debug('adding "%s"', field);
-  if (typeof options === 'function') {
-    options = { normalize: options };
-  }
-  if (options.extend === true) {
-    options = utils.merge({}, this.schema.get(field), options);
-  }
-  this.schema.field(field, type, options);
-  return this;
-};
-
-/**
- * Iterate over `pkg` properties and expand values that have corresponding
- * [fields](#field) registered on the schema.
- *
- * ```js
- * var config = new Config();
- * var pkg = config.expand(require('./package.json'));
- * ```
- * @param {Object} `pkg` The `package.json` object to expand
- * @param {Object} `options`
- * @return {Object} Returns an expanded package.json object.
- * @api public
- */
-
-Config.prototype.expand = function(pkg, options) {
-  if (typeof pkg === 'undefined') {
-    pkg = path.resolve(process.cwd(), 'package.json');
-  }
-  if (typeof pkg === 'string') {
-    pkg = utils.loadPkg.sync(pkg);
-  }
-  return this.schema.normalize(pkg, options);
-};
-
-/**
- * Config
- */
-
-module.exports = Config;
+// let semver = require('semver');
+// let Struct = struct(value => !!semver.valid(value));
+// console.log(Struct('foo'));

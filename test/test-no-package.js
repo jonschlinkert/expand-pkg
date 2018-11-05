@@ -4,7 +4,7 @@ require('mocha');
 var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
-var exists = require('fs-exists-sync');
+var exists = filepath => fs.existsSync(filepath);
 var gitty = require('gitty');
 var del = require('delete');
 var utils = require('../lib/utils');
@@ -487,7 +487,7 @@ describe('expand (no package.json)', function() {
       assert.equal(res.bugs.url, 'abc');
     });
 
-    it('should use a custom type passed on options', function() {
+    it.only('should use a custom type passed on options', function() {
       var pkg = {bugs: '', repository: 'https://github.com/foo'};
       var res = config.expand(pkg, {
         extend: false,

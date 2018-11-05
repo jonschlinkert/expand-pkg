@@ -4,7 +4,7 @@ require('mocha');
 var fs = require('fs');
 var path = require('path');
 var assert = require('assert');
-var exists = require('fs-exists-sync');
+var exists = filepath => fs.existsSync(filepath);
 var gitty = require('gitty');
 var del = require('delete');
 var Config = require('..');

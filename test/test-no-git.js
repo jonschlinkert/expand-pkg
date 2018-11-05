@@ -438,7 +438,7 @@ describe('expand-pkg (no git repository)', function() {
     });
 
     it('should use a custom type passed on options', function() {
-      var pkg = {bugs: '', repository: 'https://github.com/foo'};
+      var pkg = {bugs: '', repository: 'https://github.com/foo/bar'};
       var res = config.expand(pkg, {
         extend: false,
         fields: {
@@ -447,7 +447,7 @@ describe('expand-pkg (no git repository)', function() {
             normalize: function custom(key, val, config) {
               this.update('repository', config);
               var bugs = {};
-              bugs.url = config.repository + '/bugs'
+              bugs.url = pkg.repository + '/bugs'
               return bugs;
             }
           }
@@ -456,7 +456,7 @@ describe('expand-pkg (no git repository)', function() {
 
       assert.equal(typeof res.bugs, 'object');
       assert(res.bugs.url);
-      assert.equal(res.bugs.url, 'https://github.com/foo/bugs');
+      assert.equal(res.bugs.url, 'https://github.com/foo/bar/bugs');
     });
 
     it('should convert bugs.url to a string when specified', function() {
