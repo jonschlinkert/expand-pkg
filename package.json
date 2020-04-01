@@ -26,7 +26,7 @@
     "defaults-deep": "^0.2.4",
     "export-files": "^2.1.1",
     "get-value": "^2.0.6",
-    "kind-of": "^3.1.0",
+    "kind-of": "^6.0.3",
     "lazy-cache": "^2.0.2",
     "load-pkg": "^3.0.1",
     "mixin-deep": "^1.1.3",
